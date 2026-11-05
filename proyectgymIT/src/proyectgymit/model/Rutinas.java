@@ -11,12 +11,12 @@ package proyectgymit.model;
 public class Rutinas {
     private int id ;
     private int clienteID;
-    private int entrenadorID;
+    private Integer entrenadorID;
     private String nombreRutina;
     
     public Rutinas(){}
     
-    public Rutinas(int id, int clienteID, int entrenadorID, String nombreRutina){
+    public Rutinas(int id, int clienteID, Integer entrenadorID, String nombreRutina){
     this.id = id; 
     this.clienteID = clienteID;
     this.entrenadorID = entrenadorID;
@@ -29,8 +29,8 @@ public class Rutinas {
     public int getClienteID() {return clienteID;}
     public void setClienteID(int clienteID) {this.clienteID = clienteID;}
 
-    public int getEntrenadorID() {return entrenadorID;}
-    public void setEntrenadorID(int entrenadorID) {this.entrenadorID = entrenadorID;}
+    public Integer getEntrenadorID() {return entrenadorID;}
+    public void setEntrenadorID(Integer entrenadorID) {this.entrenadorID = entrenadorID;}
    
     public String getNombreRutina() {return nombreRutina;}
     public void setNombreRutina(String nombreRutina) {this.nombreRutina = nombreRutina;}

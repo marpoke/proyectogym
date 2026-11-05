@@ -4,43 +4,79 @@
  */
 package proyectgymit.model;
 
+import java.time.LocalDateTime;
+
+
+
 /**
  *
  * @author mario
  */
 public class Usuario {
-private int id;  
-private String nombre; 
-private String correo;
-private String password;
-private String rol;
+    private int id;
+    private String nombre;
+    private String correo;
+    private String password;
+    private String rol; // 'ADMIN', 'RECEPCION', 'ENTRENADOR', 'CLIENTE'
+    private LocalDateTime fechaRegistro;
 
-public Usuario(){}
-
-public Usuario(int id, String nombre, String correo, String password, String rol ){
-    this.id = id ;
-    this.nombre = nombre; 
-    this.correo = correo;
-    this.password = password; 
-    this.rol = rol; 
+    public Usuario() {}
+    public Usuario(int id, String nombre, String correo, String password, String rol, LocalDateTime fechaRegistro) {
+        this.id = id; 
+        this.nombre = nombre; 
+        this.correo = correo; 
+        this.password = password; 
+        this.rol = rol; 
+        this.fechaRegistro = fechaRegistro;
     }
-public int getId(){return id;}
-public void setId(int id){this.id = id;}
 
-public String getNombre(){return nombre;}
-public void setNombre(String nombre){this.nombre = nombre;}
+    public int getId() {
+        return id;
+    }
 
-public String getCorreo(){return correo;}
-public void setCorreo(String correo){
-    this.correo = correo;
-}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-public String getPassword(){return password;}
-public void setPassword(String password){this.password = password;}
+    public String getNombre() {
+        return nombre;
+    }
 
-public String getRol(){return rol;}
-public void setRol(String rol){this.rol = rol;}
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
+    }
+
+    public LocalDateTime getFechaRegistro() {
+        return fechaRegistro;
+    }
+
+    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+        this.fechaRegistro = fechaRegistro;
+    }
 
 
 }
