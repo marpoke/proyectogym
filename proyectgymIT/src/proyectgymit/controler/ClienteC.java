@@ -8,48 +8,100 @@ package proyectgymit.controler;
  *
  * @author mario
  */
+import java.sql.Statement;
 import proyectgymit.config.conexionbd;
 import proyectgymit.model.Clientes;
+import proyectgymit.model.Usuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 public class ClienteC {
-public boolean registrarCliente(Clientes cliente) {
-        String sql = "INSERT INTO clientes (usuario_id, telefono, contacto_emergencia) VALUES (?, ?, ?)";
-        try (Connection BD = conexionbd.getConexion();
-             PreparedStatement ps = BD.prepareStatement(sql)) {
+    
+    public boolean registrarClienteCompleto(Usuario usuario, Clientes cliente) {
+        String sqlUsuario = "INSERT INTO usuarios (nombre, correo, password, rol) VALUES (?, ?, ?, 'CLIENTE')";
+        String sqlCliente = "INSERT INTO clientes (usuario_id, telefono, contacto_emergencia) VALUES (?, ?, ?)";
+        Connection con = null;
+        try {
+            con = conexionbd.getConexion();
+            con.setAutoCommit(false); 
+            int idUsuarioGenerado = -1;
 
-            ps.setInt(1, cliente.getUsuarioID());
-            ps.setString(2, cliente.getTelefono());
-            ps.setString(3, cliente.getContactoEmergencia());
+            try (PreparedStatement psUser = con.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS)) {
+                psUser.setString(1, usuario.getNombre());
+                psUser.setString(2, usuario.getCorreo());
+                psUser.setString(3, usuario.getPassword()); 
+                psUser.executeUpdate();
+                try (ResultSet rs = psUser.getGeneratedKeys()) {
+                    if (rs.next()) idUsuarioGenerado = rs.getInt(1); 
+                }
+            }
 
-            return ps.executeUpdate() > 0;
+            if (idUsuarioGenerado != -1) {
+                try (PreparedStatement psCli = con.prepareStatement(sqlCliente)) {
+                    psCli.setInt(1, idUsuarioGenerado); 
+                    psCli.setString(2, cliente.getTelefono());
+                    psCli.setString(3, cliente.getContactoEmergencia());
+                    psCli.executeUpdate();
+                }
+                con.commit(); 
+                return true;
+            } else {
+                con.rollback(); 
+                return false;
+            }
         } catch (SQLException e) {
-            System.err.println("Error al registrar cliente: " + e.getMessage());
+            if (con != null) try { con.rollback(); } catch (SQLException ex) {}
             return false;
+        } finally {
+            if (con != null) try { con.setAutoCommit(true); con.close(); } catch (SQLException e) {}
         }
     }
 
-    public Clientes obtenerDatos(int usuarioId) {
-        String sql = "SELECT * FROM clientes WHERE usuario_id = ?";
-        try (Connection BD = conexionbd.getConexion();
-             PreparedStatement ps = BD.prepareStatement(sql)) {
+    public boolean eliminarCliente(int idUsuario) {
+        String sql = "DELETE FROM usuarios WHERE id = ?";
+        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) { return false; }
+    }
 
-            ps.setInt(1, usuarioId);
+    
+    public List<Clientes> listarClientes() {
+        List<Clientes> lista = new ArrayList<>();
+        String sql = "SELECT id, usuario_id, telefono, contacto_emergencia FROM clientes";
+        try (Connection con = conexionbd.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Clientes c = new Clientes();
+                c.setId(rs.getInt("id"));
+                c.setUsuarioID(rs.getInt("usuario_id"));
+                c.setTelefono(rs.getString("telefono"));
+                c.setContactoEmergencia(rs.getString("contacto_emergencia"));
+                lista.add(c);
+            }
+        } catch (SQLException e) { System.err.println("Error: " + e.getMessage()); }
+        return lista;
+    }
+
+    public Clientes buscarClientePorId(int id) {
+        Clientes c = null;
+        String sql = "SELECT id, usuario_id, telefono, contacto_emergencia FROM clientes WHERE id = ?";
+        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new Clientes(
-                        rs.getInt("id"),
-                        rs.getInt("usuario_id"),
-                        rs.getString("telefono"),
-                        rs.getString("contacto_emergencia")
-                    );
+                    c = new Clientes();
+                    c.setId(rs.getInt("id"));
+                    c.setUsuarioID(rs.getInt("usuario_id"));
+                    c.setTelefono(rs.getString("telefono"));
+                    c.setContactoEmergencia(rs.getString("contacto_emergencia"));
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error al obtener cliente: " + e.getMessage());
-        }
-        return null;
+        } catch (SQLException e) { System.err.println("Error: " + e.getMessage()); }
+        return c;
     }
 }

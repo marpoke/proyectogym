@@ -10,7 +10,8 @@ package proyectgymit.controler;
  */
 
 import proyectgymit.config.conexionbd;
-import proyectgymit.model.Usuario;
+import proyectgymit.model.Membresias;
+import proyectgymit.model.Pagos
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,29 +21,10 @@ import java.util.List;
 
 public class Transacciones {
     
-    public Usuario autenticar(String correo, String password) {
-        String sql = "SELECT * FROM usuarios WHERE correo = ? AND password = ?";
-        try (Connection BD = conexionbd.getConexion();
-             PreparedStatement ps = BD.prepareStatement(sql)) {
-
-            ps.setString(1, correo);
-            ps.setString(2, password);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new Usuario(
-                        rs.getInt("id"),
-                        rs.getString("nombre"),
-                        rs.getString("correo"),
-                        rs.getString("password"),
-                        rs.getString("rol")
-                    );
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al autenticar usuario: " + e.getMessage());
-        }
-        return null;
+    public boolean procesarPagosMebresias(Pagos pago, Membresias mebresia){
+        
+        String sqlPago = "INSERT INTO pagos ()"
+    
     }
 
 }

@@ -14,51 +14,94 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import proyectgymit.model.Usuario;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
 public class EntrenadoresC {
     
-    
-    public boolean registroEntrenador(Entrenadores entrenador){
-    String sql = "INSERT INTO entrenadores (usuario_id, especialidad,telefono ) VALUES (?,?,?)";
-    try (Connection BD = conexionbd.getConexion();
-         PreparedStatement ps = BD.prepareStatement(sql)){
+    public boolean registrarEntrenadorCompleto(Usuario usuario, Entrenadores entrenador) {
+        String sqlUsuario = "INSERT INTO usuarios (nombre, correo, password, rol) VALUES (?, ?, ?, 'ENTRENADOR')";
+        String sqlEntrenador = "INSERT INTO entrenadores (usuario_id, especialidad, telefono) VALUES (?, ?, ?)";
         
-        ps.setInt(1, entrenador.getUsuarioID() );
-        ps.setString (2, entrenador.getEspecialidad());
-        ps.setString (3, entrenador.getTelefono());
-        
-        return ps.executeUpdate()> 0;
-    }catch (SQLException e){
-        System.out.println("Error al registrar entrenador: " + e.getMessage());
-        return false;
-    }
-    }
-    
-    public Entrenadores obtenerDatos(int usuarioID){
-    
-        String sql = "SELECT * FROM entrenadores WHERE usuario_id = ?  ";
-        try(Connection BD = conexionbd.getConexion();
-            PreparedStatement ps = BD.prepareStatement(sql)){
-            
-            ps.setInt(1, usuarioID);
-            try(ResultSet rs = ps.executeQuery()){
-            if (rs.next()){
-            
-                return new Entrenadores (
+        Connection BD = null;
+        try {
+            BD = conexionbd.getConexion();
+            BD.setAutoCommit(false); 
+
+            int idUsuarioGenerado = -1;
+
+            try (PreparedStatement psUser = BD.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS)) {
+                psUser.setString(1, usuario.getNombre());
+                psUser.setString(2, usuario.getCorreo());
+                psUser.setString(3, usuario.getPassword());
+                psUser.executeUpdate();
                 
-               rs.getInt("id"),
-               rs.getInt("usuarioID"),
-               rs.getString("especialidad"),
-               rs.getString("telefono")
-                        
-                );
+                try (ResultSet rs = psUser.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        idUsuarioGenerado = rs.getInt(1); 
+                    }
+                }
             }
-          }      
-        }catch (SQLException e){
-            System.out.println("Error al obtener entrenador: " + e.getMessage());
-            
+
+            if (idUsuarioGenerado != -1) {
+                try (PreparedStatement psEnt = BD.prepareStatement(sqlEntrenador)) {
+                    psEnt.setInt(1, idUsuarioGenerado); 
+                    psEnt.setString(2, entrenador.getEspecialidad());
+                    psEnt.setString(3, entrenador.getTelefono());
+                    psEnt.executeUpdate();
+                }
+                BD.commit(); 
+                return true;
+            } else {
+                BD.rollback(); 
+                return false;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al registrar entrenador: " + e.getMessage());
+            if (BD != null) { try { BD.rollback(); } catch (SQLException ex) { } }
+            return false;
+        } finally {
+            if (BD != null) { try { BD.setAutoCommit(true); BD.close(); } catch (SQLException e) { } }
         }
-    return null;
-    }   
+    }
+
+    public boolean eliminarEntrenador(int idUsuario) {
+        String sql = "DELETE FROM usuarios WHERE id = ?";
+        try (Connection BD = conexionbd.getConexion(); 
+             PreparedStatement ps = BD.prepareStatement(sql)) {
+            
+            ps.setInt(1, idUsuario);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar entrenador: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    public List<Entrenadores> listarEntrenadores (){
+        List<Entrenadores> lista = new ArrayList <> ();
+    String sql = "SELECT id, usuario_id, especialidad, telefono FROM entrenadores";
+    try (Connection BD = conexionbd.getConexion();
+         PreparedStatement ps = BD.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()){
+    while (rs.next()){
+        Entrenadores e = new Entrenadores();
+        e.setId(rs.getInt("id"));
+        e.setUsuarioID(rs.getInt("usuario_id"));
+        e.setEspecialidad(rs.getString("especialidad"));
+        e.setTelefono(rs.getString("telefono"));
+        lista.add(e);
+        }
+    }catch (SQLException b){
+            System.out.println("error:" + b.getMessage());
+}
+    return lista;
+}
+ 
+    
 
     }
 
