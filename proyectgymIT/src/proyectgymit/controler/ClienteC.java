@@ -23,13 +23,13 @@ public class ClienteC {
     public boolean registrarClienteCompleto(Usuario usuario, Clientes cliente) {
         String sqlUsuario = "INSERT INTO usuarios (nombre, correo, password, rol) VALUES (?, ?, ?, 'CLIENTE')";
         String sqlCliente = "INSERT INTO clientes (usuario_id, telefono, contacto_emergencia) VALUES (?, ?, ?)";
-        Connection con = null;
+        Connection BD = null;
         try {
-            con = conexionbd.getConexion();
-            con.setAutoCommit(false); 
+            BD = conexionbd.getConexion();
+            BD.setAutoCommit(false); 
             int idUsuarioGenerado = -1;
 
-            try (PreparedStatement psUser = con.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS)) {
+            try (PreparedStatement psUser = BD.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS)) {
                 psUser.setString(1, usuario.getNombre());
                 psUser.setString(2, usuario.getCorreo());
                 psUser.setString(3, usuario.getPassword()); 
@@ -40,23 +40,23 @@ public class ClienteC {
             }
 
             if (idUsuarioGenerado != -1) {
-                try (PreparedStatement psCli = con.prepareStatement(sqlCliente)) {
+                try (PreparedStatement psCli = BD.prepareStatement(sqlCliente)) {
                     psCli.setInt(1, idUsuarioGenerado); 
                     psCli.setString(2, cliente.getTelefono());
                     psCli.setString(3, cliente.getContactoEmergencia());
                     psCli.executeUpdate();
                 }
-                con.commit(); 
+                BD.commit(); 
                 return true;
             } else {
-                con.rollback(); 
+                BD.rollback(); 
                 return false;
             }
         } catch (SQLException e) {
-            if (con != null) try { con.rollback(); } catch (SQLException ex) {}
+            if (BD != null) try { BD.rollback(); } catch (SQLException ex) {}
             return false;
         } finally {
-            if (con != null) try { con.setAutoCommit(true); con.close(); } catch (SQLException e) {}
+            if (BD != null) try { BD.setAutoCommit(true); BD.close(); } catch (SQLException e) {}
         }
     }
 
@@ -103,5 +103,33 @@ public class ClienteC {
             }
         } catch (SQLException e) { System.err.println("Error: " + e.getMessage()); }
         return c;
+    }
+    
+    public List<Clientes> busquedaClienteDinamica (String txtBusqueda){
+        List <Clientes> lista = new ArrayList<>();
+        String sql = "SELECT c.id, c.usuario_id, c.telefono, c.contacto_emergencia " +
+                     "FROM clientes c " +
+                     "INNER JOIN usuarios u ON c.usuario_id = u.id " +
+                     "WHERE u.nombre LIKE ? OR c.telefono LIKE ? OR c.contacto_emergencia LIKE ?";
+        try(Connection BD = conexionbd.getConexion();
+            PreparedStatement ps = BD.prepareStatement(sql)){
+            String filtro = "%" + txtBusqueda + "%";
+            ps.setString(1, filtro);
+            ps.setString(2, filtro);
+            ps.setString(3, filtro);
+            try(ResultSet rs = ps.executeQuery()){
+                while(rs.next()){
+                    Clientes c = new Clientes();
+                    c.setId(rs.getInt("id"));
+                    c.setUsuarioID(rs.getInt("usuario_id"));
+                    c.setTelefono(rs.getString("telefono"));
+                    c.setContactoEmergencia(rs.getString("contacto_emergencia"));
+                    lista.add(c);
+                }
+            }
+        }catch (SQLException e){
+            System.out.println("error: "+ e.getMessage());
+        }
+        return lista;
     }
 }

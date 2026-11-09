@@ -96,11 +96,62 @@ public class EntrenadoresC {
         lista.add(e);
         }
     }catch (SQLException b){
-            System.out.println("error:" + b.getMessage());
+            System.err.println("error:" + b.getMessage());
 }
     return lista;
 }
  
+    public Entrenadores buscarEntrenadorID(int id){
+    
+       Entrenadores e = null;
+       String sql = "SELECT id, usuario_id, especialidad, telefono FROM entrenadores WHERE id = ? ";
+       try(Connection BD = conexionbd.getConexion();
+           PreparedStatement ps = BD.prepareStatement(sql))
+           {
+               ps.setInt(1, id);
+               try(ResultSet rs = ps.executeQuery()){
+                   if(rs.next()){
+                       e = new Entrenadores();
+                       e.setId(rs.getInt("id"));
+                       e.setUsuarioID(rs.getInt("usuario_id"));
+                       e.setEspecialidad(rs.getString("especialidad"));
+                       e.setTelefono(rs.getString("telefono"));
+                   }
+               }
+           }catch (SQLException b){
+                   System.err.println("errror: " + b.getMessage());
+                   }
+           return e;
+    }
+    
+    public List<Entrenadores> busquedaEntrenadoresDinamica(String txtBusqueda){
+        List <Entrenadores> lista = new ArrayList<>();
+        String sql = "SELECT e.id, e.usuario_id, e.especialidad , e.telefono" + 
+                     "FROM entrenadores e" +
+                     "INNER JOIN usuarios u ON e.usuario_id = u.id" +
+                     "WHERE u.nombre LIKE ? OR u.correo LIKE ? OR e.telefono LIKE ?";
+        try(Connection BD = conexionbd.getConexion();
+            PreparedStatement ps = BD.prepareStatement(sql)){
+            String filtro = "%" + txtBusqueda + "%";
+            ps.setString(1, filtro);
+            ps.setString(2, filtro);
+            ps.setString(3, filtro);
+            try(ResultSet rs = ps.executeQuery()){
+                while(rs.next()){
+                    Entrenadores e = new Entrenadores();
+                    e.setId(rs.getInt("id"));
+                    e.setUsuarioID(rs.getInt("usuario_id"));
+                    e.setEspecialidad(rs.getString("especialidad"));
+                    e.setTelefono(rs.getString("telefono"));
+                    lista.add(e);
+                }
+            }
+        }catch (SQLException ex){
+            System.out.println("error: " + ex.getMessage());
+            
+        }
+        return lista;
+    }
     
 
     }

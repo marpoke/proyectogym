@@ -41,7 +41,7 @@ public int crearRutina(Rutinas rutina) {
         return idGenerado;
     }
 
-    // --- NUEVOS MÉTODOS DE BÚSQUEDA ---
+    
     public List<Rutinas> listarRutinasPorCliente(int clienteId) {
         List<Rutinas> lista = new ArrayList<>();
         String sql = "SELECT id, cliente_id, entrenador_id, nombre_rutina FROM rutinas WHERE cliente_id = ?";
@@ -62,5 +62,24 @@ public int crearRutina(Rutinas rutina) {
         } catch (SQLException e) { System.err.println("Error: " + e.getMessage()); }
         return lista;
     }
+    public Rutinas buscarRutinaPorId(int id) {
+        Rutinas r = null;
+        String sql = "SELECT id, cliente_id, entrenador_id, nombre_rutina FROM rutinas WHERE id = ?";
+        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    r = new Rutinas();
+                    r.setId(rs.getInt("id"));
+                    r.setClienteID(rs.getInt("cliente_id"));
+                    int entId = rs.getInt("entrenador_id");
+                    r.setEntrenadorID(rs.wasNull() ? null : entId);
+                    r.setNombreRutina(rs.getString("nombre_rutina"));
+                }
+            }
+        } catch (SQLException e) { System.err.println("Error: " + e.getMessage()); }
+        return r;
+    }
+}
 }
 

@@ -21,8 +21,8 @@ public class UsuarioC {
         Usuario usuarioLogueado = null;
         String sql = "SELECT id, nombre, correo, rol FROM usuarios WHERE correo = ? AND password = ?";
         
-        try (Connection con = conexionbd.getConexion(); 
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); 
+             PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setString(1, correo);
             ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
@@ -40,8 +40,8 @@ public class UsuarioC {
 
     public boolean registrarPersonal(Usuario personal) {
         String sql = "INSERT INTO usuarios (nombre, correo, password, rol) VALUES (?, ?, ?, ?)";
-        try (Connection con = conexionbd.getConexion(); 
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); 
+             PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setString(1, personal.getNombre());
             ps.setString(2, personal.getCorreo());
             ps.setString(3, personal.getPassword());
@@ -52,18 +52,18 @@ public class UsuarioC {
 
     public boolean eliminarPersonal(int idUsuario) {
         String sql = "DELETE FROM usuarios WHERE id = ?";
-        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setInt(1, idUsuario);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) { return false; }
     }
 
-    // --- NUEVOS MÉTODOS DE BÚSQUEDA ---
+    
     public List<Usuario> listarUsuarios() {
         List<Usuario> lista = new ArrayList<>();
         String sql = "SELECT id, nombre, correo, rol FROM usuarios";
-        try (Connection con = conexionbd.getConexion();
-             PreparedStatement ps = con.prepareStatement(sql);
+        try (Connection BD = conexionbd.getConexion();
+             PreparedStatement ps = BD.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Usuario u = new Usuario();
@@ -80,7 +80,7 @@ public class UsuarioC {
     public Usuario buscarUsuarioPorId(int id) {
         Usuario u = null;
         String sql = "SELECT id, nombre, correo, rol FROM usuarios WHERE id = ?";
-        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -93,5 +93,29 @@ public class UsuarioC {
             }
         } catch (SQLException e) { System.err.println("Error: " + e.getMessage()); }
         return u;
+    }
+    
+    public List<Usuario> busquedaUsuarioDinamica(String txtBusqueda){
+        List<Usuario> lista = new ArrayList<>();
+        String sql = "SELECT id, nombre, correo, rol FROM usuarios WHERE nombre LIKE ? OR correo LIKE ?";
+        try(Connection BD = conexionbd.getConexion();
+            PreparedStatement ps = BD.prepareStatement(sql)){
+            String filtro = "%" + txtBusqueda + "%";
+            ps.setString(1,filtro);
+            ps.setString(2,filtro);
+            try(ResultSet rs = ps.executeQuery()){
+                while(rs.next()){
+                    Usuario u = new Usuario();
+                    u.setId(rs.getInt("id"));
+                    u.setNombre(rs.getString("nombre"));
+                    u.setCorreo(rs.getString("correo"));
+                    u.setRol(rs.getString("rol"));
+                    lista.add(u);
+                    
+                }
+            }
+        }catch (SQLException e){
+            System.out.println("error: "+ e.getMessage());
+        }return lista;
     }
 }
