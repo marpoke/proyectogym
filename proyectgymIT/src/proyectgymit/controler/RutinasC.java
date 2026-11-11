@@ -25,8 +25,8 @@ public class RutinasC {
 public int crearRutina(Rutinas rutina) {
         String sql = "INSERT INTO rutinas (cliente_id, entrenador_id, nombre_rutina) VALUES (?, ?, ?)";
         int idGenerado = -1;
-        try (Connection con = conexionbd.getConexion(); 
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection BD = conexionbd.getConexion(); 
+             PreparedStatement ps = BD.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, rutina.getClienteID());
             if (rutina.getEntrenadorID() != null) ps.setInt(2, rutina.getEntrenadorID()); 
             else ps.setNull(2, Types.INTEGER); 
@@ -45,7 +45,7 @@ public int crearRutina(Rutinas rutina) {
     public List<Rutinas> listarRutinasPorCliente(int clienteId) {
         List<Rutinas> lista = new ArrayList<>();
         String sql = "SELECT id, cliente_id, entrenador_id, nombre_rutina FROM rutinas WHERE cliente_id = ?";
-        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setInt(1, clienteId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -65,7 +65,7 @@ public int crearRutina(Rutinas rutina) {
     public Rutinas buscarRutinaPorId(int id) {
         Rutinas r = null;
         String sql = "SELECT id, cliente_id, entrenador_id, nombre_rutina FROM rutinas WHERE id = ?";
-        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -81,5 +81,5 @@ public int crearRutina(Rutinas rutina) {
         return r;
     }
 }
-}
+
 

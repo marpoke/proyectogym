@@ -62,7 +62,7 @@ public class ClienteC {
 
     public boolean eliminarCliente(int idUsuario) {
         String sql = "DELETE FROM usuarios WHERE id = ?";
-        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setInt(1, idUsuario);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) { return false; }
@@ -72,8 +72,8 @@ public class ClienteC {
     public List<Clientes> listarClientes() {
         List<Clientes> lista = new ArrayList<>();
         String sql = "SELECT id, usuario_id, telefono, contacto_emergencia FROM clientes";
-        try (Connection con = conexionbd.getConexion();
-             PreparedStatement ps = con.prepareStatement(sql);
+        try (Connection BD = conexionbd.getConexion();
+             PreparedStatement ps = BD.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Clientes c = new Clientes();
@@ -90,7 +90,7 @@ public class ClienteC {
     public Clientes buscarClientePorId(int id) {
         Clientes c = null;
         String sql = "SELECT id, usuario_id, telefono, contacto_emergencia FROM clientes WHERE id = ?";
-        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {

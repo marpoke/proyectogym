@@ -19,8 +19,8 @@ public class AsistenciasC {
     
     public boolean registrarAsistencia(int idCliente) {
         String sql = "INSERT INTO asistencias (cliente_id) VALUES (?)";
-        try (Connection con = conexionbd.getConexion(); 
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); 
+             PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setInt(1, idCliente);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) { return false; }
@@ -30,7 +30,7 @@ public List<Asistencias> listarAsistenciasCliente(int clienteId) {
         List<Asistencias> lista = new ArrayList<>();
         String sql = "SELECT id, cliente_id, fecha_entrada FROM asistencias WHERE cliente_id = ? ORDER BY fecha_entrada DESC";
         
-        try (Connection con = conexionbd.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection BD = conexionbd.getConexion(); PreparedStatement ps = BD.prepareStatement(sql)) {
             ps.setInt(1, clienteId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
