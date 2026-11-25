@@ -11,6 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import proyectgymit.util.Item;
+import proyectgymit.security.Permisos;
+import proyectgymit.security.Permisos.Modulo;
 /**
  *
  * @author mario
@@ -18,6 +21,7 @@ import java.util.List;
 public class EjerciciosC {
     
     public boolean registrarEjercicios (Ejercicios ejercicio){
+        Permisos.exigirEscritura(Modulo.EJERCICIOS);
         String sql = "INSERT INTO ejercicios (nombre, grupo_muscular, descripcion) VALUES (?,?,?)";
         try (Connection BD = conexionbd.getConexion();
              PreparedStatement ps = BD.prepareStatement(sql)){
@@ -33,6 +37,7 @@ public class EjerciciosC {
     }
     
     public boolean actualizarEjercicios(Ejercicios ejercicio){
+        Permisos.exigirEscritura(Modulo.EJERCICIOS);
         String sql = "UPDATE ejercicios SET nombre = ?, grupo_muscular = ?, descripcion = ? WHERE id = ?";
         try (Connection BD = conexionbd.getConexion();
              PreparedStatement ps = BD.prepareStatement(sql)){
@@ -49,7 +54,8 @@ public class EjerciciosC {
     }
     
     public boolean eliminarEjercicios(Ejercicios ejercicio){
-        String sql = "DELATE FROM ejercicios WHERE id = ?";
+        Permisos.exigirEscritura(Modulo.EJERCICIOS);
+        String sql = "DELETE FROM ejercicios WHERE id = ?";
         try(Connection BD = conexionbd.getConexion();
             PreparedStatement ps = BD.prepareStatement(sql)){
             ps.setInt(1, ejercicio.getId());
@@ -99,6 +105,12 @@ public class EjerciciosC {
             }
         } catch (SQLException e) { System.err.println("Error: " + e.getMessage()); }
         return ej;
+    }
+
+    public List<Item> listarEjerciciosCombo() {
+        List<Item> lista = new ArrayList<>();
+        for (Ejercicios e : listarEjercicios()) lista.add(new Item(e.getId(), e.getNombre()));
+        return lista;
     }
 
     public List<Ejercicios> buscarEjerciciosDinamico(String textoBusqueda) {
