@@ -1,0 +1,70 @@
+CREATE DATABASE IF NOT EXISTS gym_db;
+USE gym_db;
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    rol ENUM('ADMIN', 'RECEPCION', 'ENTRENADOR', 'CLIENTE') NOT NULL,
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS clientes (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT UNIQUE NOT NULL,
+    telefono VARCHAR(20),
+    contacto_emergencia VARCHAR(100),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS entrenadores (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT UNIQUE NOT NULL,
+    especialidad VARCHAR(100),
+    telefono VARCHAR(20),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS membresias (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    tipo_plan VARCHAR(50) NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    estado ENUM('ACTIVA', 'VENCIDA', 'CANCELADA') DEFAULT 'ACTIVA',
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS ejercicios (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    grupo_muscular VARCHAR(50) NOT NULL,
+    descripcion TEXT
+);
+CREATE TABLE IF NOT EXISTS rutinas (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    entrenador_id INT,
+    nombre_rutina VARCHAR(100) NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    FOREIGN KEY (entrenador_id) REFERENCES entrenadores(id) ON DELETE SET NULL
+);
+CREATE TABLE IF NOT EXISTS rutina_ejercicio (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    rutina_id INT NOT NULL,
+    ejercicio_id INT NOT NULL,
+    series INT NOT NULL,
+    repeticiones INT NOT NULL,
+    FOREIGN KEY (rutina_id) REFERENCES rutinas(id) ON DELETE CASCADE,
+    FOREIGN KEY (ejercicio_id) REFERENCES ejercicios(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS pagos (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    metodo_pago ENUM('EFECTIVO', 'TARJETA', 'TRANSFERENCIA') NOT NULL,
+    fecha_pago DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS asistencias (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    fecha_entrada DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+);
